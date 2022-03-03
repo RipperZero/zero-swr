@@ -1,0 +1,33 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    // 安装Code Runner插件
+    // 运行当前JS代码片段
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Test",
+      "skipFiles": ["<node_internals>/**"],
+      "program": "${file}"
+    },
+    // 以下均为 create react-app 脚手架创建出的相关项目的配置
+    {
+      "type": "chrome",
+      "request": "launch",
+      // Debug模式下 下拉菜单可以选择的配置名
+      "name": "Launch Chrome against localhost",
+      // 项目端口
+      "url": "http://localhost:3000",
+      "webRoot": "${workspaceFolder}"
+    },
+    {
+      "name": "Attach to Chrome",
+      // attach模式下 remote debug占用的端口（可以自定义）
+      "port": 9222,
+      "request": "attach",
+      "type": "chrome",
+      "url": "http://localhost:3000",
+      "webRoot": "${workspaceFolder}"
+    }
+  ]
+}
