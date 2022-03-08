@@ -11,6 +11,7 @@ import {
   TableRow,
   CircularProgress,
   Box,
+  Button,
 } from "@mui/material";
 import { useGetOptions } from "../hooks";
 import { SWRBox } from "./SWRBox";
@@ -45,12 +46,12 @@ export const SWRTable: FC<SWRTableProps> = () => {
   // hooks start
   const classes = useStyles();
 
-  const { data, isValidating } = useGetOptions();
+  const { data, isValidating, getOptionsMutate } = useGetOptions();
   // hooks end
 
   // useEffect functions start
   useEffect(() => {
-    console.log(isValidating);
+    console.log("isValidating------" + isValidating);
   }, [isValidating]);
   // useEffect functions end
 
@@ -104,6 +105,16 @@ export const SWRTable: FC<SWRTableProps> = () => {
           </Table>
         </TableContainer>
         <SWRBox />
+        <Button
+          variant="contained"
+          onClick={() => {
+            getOptionsMutate().then((res) => {
+              console.log(res);
+            });
+          }}
+        >
+          Fetch
+        </Button>
       </Box>
     );
   };
