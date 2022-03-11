@@ -48,7 +48,6 @@ export const SWRTable: FC<SWRTableProps> = () => {
 
   const { data, isValidating, getOptionsMutate } = useGetOptions();
   // hooks end
-
   // useEffect functions start
   useEffect(() => {
     console.log("isValidating------" + isValidating);

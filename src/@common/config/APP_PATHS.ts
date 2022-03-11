@@ -7,6 +7,9 @@ export const APP_PATHS = {
   /** ROOT */
   ROOT: BASEURL,
 
+  /** Pagination */
+  PAGINATION: `${BASEURL}pagination`,
+
   /** main-menu */
   MAINMENU: `${BASEURL}main-menu`,
 };
