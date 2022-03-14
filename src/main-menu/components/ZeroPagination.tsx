@@ -1,8 +1,8 @@
-import { FC, useState, useEffect, useMemo } from "react";
+import { FC, useState, useMemo } from "react";
 import { makeStyles, createStyles } from "@material-ui/styles";
 import { Box, Button, Typography, TextField } from "@mui/material";
 import { useGetRestaurants } from "../hooks";
-import { GetRestaurantsResObj } from "@api.Restaurant";
+import { GetRestaurantsReqParams, GetRestaurantsResObj } from "@api.Restaurant";
 
 const useStyles = makeStyles((theme) => {
   return createStyles({
@@ -21,33 +21,33 @@ export const ZeroPagination: FC<ZeroPaginationProps> = () => {
   // hooks start
   const classes = useStyles();
 
+  // input start
   const [zipCode, setZipCode] = useState("95008");
   const [date, setDate] = useState("");
   const [waveSeq, setWaveSeq] = useState("");
   const [tagId, setTagId] = useState("");
+  // input end
+
+  const [swrParam, setSwrParam] = useState<
+    Omit<GetRestaurantsReqParams, "page">
+  >({
+    param: {
+      zip_code: zipCode,
+      date: date,
+      wave_seq: waveSeq,
+      tag_id: tagId,
+    },
+    size: PAGE_SIZE,
+  });
 
   const { data, mutate, size, setSize, isLoadingMore, isRefreshing } =
-    useGetRestaurants(
-      {
-        param: {
-          date: date,
-          wave_seq: waveSeq,
-          tag_id: tagId,
-          zip_code: zipCode,
-        },
-        size: PAGE_SIZE,
-      },
-      true,
-      true,
-    );
-
-  // const issues = data ? [].concat(...data) : [];
+    useGetRestaurants(swrParam, true, true);
 
   const issues = useMemo(() => {
     const _issues: GetRestaurantsResObj["restaurantResponses"] = [];
 
     data?.forEach((_data) => {
-      _data.object.restaurantResponses.forEach((res) => _issues.push(res));
+      _data?.object?.restaurantResponses.forEach((res) => _issues.push(res));
     });
 
     return _issues;
@@ -74,6 +74,17 @@ export const ZeroPagination: FC<ZeroPaginationProps> = () => {
       <Button
         variant="contained"
         onClick={() => {
+          // 查询参数改变 size设为1
+          // size设为1后会重新从SWR Map中拼装useSWRInfinite返回data数组
+          setSwrParam({
+            param: {
+              zip_code: zipCode,
+              date: date,
+              wave_seq: waveSeq,
+              tag_id: tagId,
+            },
+            size: PAGE_SIZE,
+          });
           setSize(1);
         }}
       >
@@ -116,6 +127,7 @@ export const ZeroPagination: FC<ZeroPaginationProps> = () => {
         <Button
           variant="contained"
           onClick={() => {
+            // 查询参数不变 size + 1
             setSize(size + 1);
           }}
         >
