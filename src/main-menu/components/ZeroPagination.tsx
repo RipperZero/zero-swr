@@ -1,32 +1,65 @@
-import { FC, useEffect } from "react";
-// import { makeStyles, createStyles } from "@material-ui/styles";
-// import { Box } from "@mui/material";
-import { usePagination } from "../hooks";
+import { FC, useState, useEffect, useMemo } from "react";
+import { makeStyles, createStyles } from "@material-ui/styles";
+import { Box, Button, Typography, TextField } from "@mui/material";
+import { useGetRestaurants } from "../hooks";
+import { GetRestaurantsResObj } from "@api.Restaurant";
 
-// const useStyles = makeStyles((theme) => {
-//   return createStyles({
-//     example: {},
-//   });
-// });
+const useStyles = makeStyles((theme) => {
+  return createStyles({
+    inputArea: {
+      marginTop: "1em",
+      marginBottom: "1em",
+    },
+  });
+});
 
 type ZeroPaginationProps = {};
 
-const PAGE_SIZE = 6;
+const PAGE_SIZE = 20;
 
 export const ZeroPagination: FC<ZeroPaginationProps> = () => {
   // hooks start
-  const { data, error, mutate, size, setSize, isValidating, changeParams } =
-    usePagination();
+  const classes = useStyles();
 
-  const issues = data ? [].concat(...data) : [];
-  const isLoadingInitialData = !data && !error;
-  const isLoadingMore =
-    isLoadingInitialData ||
-    (size > 0 && data && typeof data[size - 1] === "undefined");
-  const isEmpty = data?.[0]?.length === 0;
+  const [zipCode, setZipCode] = useState("95008");
+  const [date, setDate] = useState("");
+  const [waveSeq, setWaveSeq] = useState("");
+  const [tagId, setTagId] = useState("");
+
+  const { data, mutate, size, setSize, isLoadingMore, isRefreshing } =
+    useGetRestaurants(
+      {
+        param: {
+          date: date,
+          wave_seq: waveSeq,
+          tag_id: tagId,
+          zip_code: zipCode,
+        },
+        size: PAGE_SIZE,
+      },
+      true,
+      true,
+    );
+
+  // const issues = data ? [].concat(...data) : [];
+
+  const issues = useMemo(() => {
+    const _issues: GetRestaurantsResObj["restaurantResponses"] = [];
+
+    data?.forEach((_data) => {
+      _data.object.restaurantResponses.forEach((res) => _issues.push(res));
+    });
+
+    return _issues;
+  }, [data]);
+
+  const isEmpty = issues.length === 0;
+
   const isReachingEnd =
-    isEmpty || (data && data[data.length - 1]?.length < PAGE_SIZE);
-  const isRefreshing = isValidating && data && data.length === size;
+    isEmpty ||
+    (data &&
+      data[data.length - 1].object.restaurantResponses.length < PAGE_SIZE);
+
   // hooks end
 
   // useEffect functions start
@@ -37,24 +70,53 @@ export const ZeroPagination: FC<ZeroPaginationProps> = () => {
 
   // render functions start
   return (
-    <div style={{ fontFamily: "sans-serif" }}>
-      <button
+    <Box style={{ fontFamily: "sans-serif" }}>
+      <Button
+        variant="contained"
         onClick={() => {
-          //   setSize(1);
+          setSize(1);
         }}
       >
         load issues
-      </button>
-      <p>
+      </Button>
+      <Box className={classes.inputArea}>
+        <TextField
+          label="zip_code"
+          value={zipCode}
+          onChange={(event) => {
+            setZipCode(event.target.value);
+          }}
+        />
+        <TextField
+          label="date"
+          value={date}
+          onChange={(event) => {
+            setDate(event.target.value);
+          }}
+        />
+        <TextField
+          label="wave_seq"
+          value={waveSeq}
+          onChange={(event) => {
+            setWaveSeq(event.target.value);
+          }}
+        />
+        <TextField
+          label="tag_id"
+          value={tagId}
+          onChange={(event) => {
+            setTagId(event.target.value);
+          }}
+        />
+      </Box>
+
+      <Typography>
         showing {size} page(s) of {isLoadingMore ? "..." : issues.length}{" "}
         issue(s){" "}
-        <button
-          disabled={isLoadingMore || isReachingEnd}
+        <Button
+          variant="contained"
           onClick={() => {
-            const zero = data?.length ? data?.length : 0;
-            console.log(zero);
             setSize(size + 1);
-            changeParams({ page_number: zero });
           }}
         >
           {isLoadingMore
@@ -62,23 +124,27 @@ export const ZeroPagination: FC<ZeroPaginationProps> = () => {
             : isReachingEnd
             ? "no more issues"
             : "load more"}
-        </button>
-        <button disabled={isRefreshing} onClick={() => mutate()}>
+        </Button>
+        <Button
+          variant="contained"
+          disabled={isRefreshing}
+          onClick={() => mutate()}
+        >
           {isRefreshing ? "refreshing..." : "refresh"}
-        </button>
-        <button disabled={!size} onClick={() => setSize(0)}>
+        </Button>
+        <Button variant="outlined" disabled={!size} onClick={() => setSize(0)}>
           clear
-        </button>
-      </p>
-      {isEmpty ? <p>Yay, no issues found.</p> : null}
-      {issues.map((issue: any) => {
+        </Button>
+      </Typography>
+      {isEmpty ? <Typography>Yay, no issues found.</Typography> : null}
+      {issues.map((issue) => {
         return (
-          <p key={issue.id} style={{ margin: "6px 0" }}>
+          <Typography key={issue.title} style={{ margin: "6px 0" }}>
             - {issue.title}
-          </p>
+          </Typography>
         );
       })}
-    </div>
+    </Box>
   );
   // render functions end
 };

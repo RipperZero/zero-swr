@@ -10,7 +10,6 @@ export const SWRPagination: FC = () => {
 
   const { data, error, mutate, size, setSize, isValidating } = useSWRInfinite(
     (index) => {
-      console.log(index);
       return `https://api.github.com/repos/${repo}/issues?per_page=${PAGE_SIZE}&page=${
         index + 1
       }`;

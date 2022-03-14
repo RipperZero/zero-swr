@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-// import Fetch from "utils/axios";
+import Fetch from "utils/axios";
 import useSWRInfinite from "swr/infinite";
 
 type SWRKey = {
@@ -12,18 +12,16 @@ type SWRKey = {
 const PAGE_SIZE = 6;
 
 export const usePagination = () => {
-  const paramsRef = useRef<any>(null);
+  // const paramsRef = useRef<any>(null);
 
-  const changeParams = (params: SWRKey["params"]) => {
-    paramsRef.current = params;
-    console.log(paramsRef.current);
-  };
+  // const changeParams = (params: SWRKey["params"]) => {
+  //   paramsRef.current = params;
+  //   console.log(paramsRef.current);
+  // };
 
-  const fetcher = (url: string, params: SWRKey["params"]) => {
+  const fetcher = (url: string) => {
     // const fetcher = (swrKey: SWRKey) => {
     //   const url = `${swrKey.url}${swrKey.params.page_number}`;
-    console.log(params);
-    console.log(paramsRef.current);
     return fetch(url).then((res) => res.json());
   };
 
@@ -47,17 +45,22 @@ export const usePagination = () => {
       // console.log(swrKey);
       return swrKey;
     },
-    (url) => fetcher(url, paramsRef.current),
-    {
-      revalidateFirstPage: false,
-      revalidateAll: false,
-      revalidateIfStale: false,
-    },
+    fetcher,
+    // {
+    //   revalidateFirstPage: false,
+    //   revalidateAll: false,
+    //   revalidateIfStale: false,
+    // },
   );
 
-  useEffect(() => {
-    console.log(data);
-  }, [data]);
+  const isLoadingInitialData = !data && !error;
+  const isLoadingMore =
+    isLoadingInitialData ||
+    (size > 0 && data && typeof data[size - 1] === "undefined");
+  const isEmpty = data?.[0]?.length === 0;
+  const isReachingEnd =
+    isEmpty || (data && data[data.length - 1]?.length < PAGE_SIZE);
+  const isRefreshing = isValidating && data && data.length === size;
 
   return {
     data,
@@ -66,6 +69,11 @@ export const usePagination = () => {
     size,
     setSize,
     isValidating,
-    changeParams,
+    isLoadingInitialData,
+    isLoadingMore,
+    isEmpty,
+    isReachingEnd,
+    isRefreshing,
+    // changeParams,
   } as const;
 };
